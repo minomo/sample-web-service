@@ -1,0 +1,11 @@
+{
+{% for context in contexts %}
+ [
+  "@context": "https://minomo.github.io/context/store.json-ld",
+  "title": "{{ context.title }}",
+  "description": "{{ context.description }}",
+  "url": "{{ context.url }}",
+  "author": "{{ context.author }}",
+ ],
+{% endfor %}
+}

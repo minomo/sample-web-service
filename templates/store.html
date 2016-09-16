@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block head %}<link rel="alternate" type="application/ld+json" href="/store/contexts.json-ld">{% endblock %}
+
+{% block content %}
+{% for row in rows %}
+<div class="row">
+  <h1>{{ row.title }}</h1>
+  <p class="lead">{{ row.description }}</p>
+  <div>
+    url: {{ row.url }}
+    author: {{ row.author }}
+  </div>
+  <hr>
+</div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block script %}
+<script>
+$(function() {
+	setForm = function(action, url, title, description, context, key) {
+		$('#action').val(action);
+		$('#url').val(url).prop('readonly', !!url);
+		$('#title').val(title);
+		$('#description').val(description);
+		if (context) {
+			if (typeof context !== 'string') {
+				context = JSON.stringify(context, null, 2);
+			}
+			
+			$('#context').val(context);
+			$('#form-group-context').show();
+		} else {
+			$('#context').val('');
+			$('#form-group-context').hide();
+		}
+		$('#key').val(key);
+	};
+	
+	$('.delete-row').on('click', function() {
+		$('#dialog-delete-key').val($(this).data('key'));
+		$('#dialog-delete').modal('show');
+		return false;
+	});
+	
+	$('.edit-row').on('click', function() {
+		$t = $(this);
+		setForm('edit', $t.data('url'), $t.data('title'), $t.data('description'), $t.data('context'), $t.data('key'))
+		$('#modal-form').modal('show');
+		return false;
+	});
+	
+	$('#btn-new').on('click', function() {
+		setForm('add', '', '', '', false, '');
+		$('#modal-form').modal('show');
+		return false;
+	});
+	
+	
+});
+</script>
+{% endblock %}
+
+{% block content %}
+{% autoescape on %}
+<header class="text-right">
+<button id="btn-new" class="btn btn-primary">New</button>
+</header>
+
+<div>
+{% for row in rows %}
+ <div class="row">
+  <h1>{{ row.title }}</h1>
+  <div class="col-sm-10">
+   <p class="lead">{{ row.description }}</p>
+   <div>
+    url: {{ row.url }}
+    regdate: {{ row.added_on|date:"SHORT_DATE_FORMAT" }}
+   </div>
+  </div>
+
+   <div class="col-sm-2">
+    <input type="button" value="Edit" class="btn btn-default btn-xs edit-row" data-url="{{ row.key.id }}" data-title="{{ row.title }}" data-description="{{ row.description }}" data-context="{{ row.context }}" data-key="{{ row.key.urlsafe }}">
+    <form method="post">
+     <input type="hidden" name="key" value="{{ row.key.urlsafe }}">
+     <input type="hidden" name="action" value="delete">
+     <input type="submit" value="Del" class="btn btn-danger btn-xs delete-row" data-key="{{ row.key.urlsafe }}">
+    </form>
+   </div>
+ </div>
+ <hr>
+{% endfor %}
+</div>
+
+<div class="modal" id="modal-form" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h3 class="modal-title">{{ title }}</h3>
+      </div>
+    <form action="" method="post">
+      <input id="action" name="action" type="hidden" value="add">
+      <input id="key" name="key" type="hidden" value="add">
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="url">URL:</label>
+          <input id="url" name="url" type="text" class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="title">title:</label>
+          <input id="title" name="title" type="text" class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="description">description:</label>
+          <textarea id="description" name="description" class="form-control"></textarea>
+        </div>
+        <div id="form-group-context" class="form-group">
+          <label for="context">@context:</label>
+          <textarea id="context" class="form-control" disabled="disabled"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <input type="submit" value="Register" class="btn btn-primary">
+        <button type="button" class="btn" data-dismiss="modal">Close</button>
+      </div>
+    </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="dialog-delete" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h3 class="modal-title">Delete</h3>
+      </div>
+      <div class="modal-body">Realy?</div>
+      <div class="modal-footer">
+       <form method="post" action="">
+        <input type="hidden" id="dialog-delete-key" name="key" value="">
+        <input type="hidden" name="action" value="delete">
+        <input type="submit" value="Delete" class="btn btn-danger">
+       </form>
+       <button type="button" class="btn" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endautoescape %}
+{% endblock %}
