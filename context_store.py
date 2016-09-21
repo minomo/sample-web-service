@@ -3,14 +3,14 @@ import logging
 import json
 import webapp2
 from google.appengine.api import urlfetch
-from google.appengine.api import users
 from google.appengine.ext import ndb
 from google.appengine.ext.webapp import template
 import models
-
+import register_handler
 
 BASE_URL = '/contexts/'
 REGISTER_URL = BASE_URL + 'register'
+
 
 class Context(models.BaseModel):
     author = ndb.UserProperty()
@@ -38,48 +38,12 @@ class StoreHandler(webapp2.RequestHandler):
         self.response.out.write(template.render(template_path, template_dict))
 
 
-class RegistorContext(webapp2.RequestHandler):
-
-    def get(self):
-        user = users.get_current_user()
-        if not user:
-            self.redirect(users.create_login_url(self.request.uri))
-            return
-        
-        if self.request.get('logout') == '1':
-            self.redirect(users.create_logout_url(BASE_URL))
-            return
-        
-        entities = Context.query(Context.author == user).fetch()
-        template_dict = {
-            'title': 'Register context',
-            'rows': entities,
-            'menu': [
-                {'url': BASE_URL, 'text':'List'},
-                {'url':self.request.uri + '?logout=1','text':'Logout'},
-            ],
-        }
-        
-        template_path = os.path.join(os.path.dirname(__file__), 'templates', 'register.html')
-        self.response.out.write(template.render(template_path, template_dict))
+class RegistorContext(register_handler.RegisterHandler):
+    HANDLER_URL = BASE_URL
+    TENPLATE = 'register.html'
     
-    def post(self):
-        user = users.get_current_user()
-        if not user:
-            self.response.status = 403
-            return
-        
-        action = self.request.get('action')
-        result = False
-        if action == 'delete':
-            result = self._delete(user)
-        elif action == 'edit':
-            result = self._edit(user);
-        else:
-            result = self._add(user)
-        
-        if result:
-            self.redirect(self.request.url)
+    def _get_query(self, user):
+        return Context.query(Context.author == user)
     
     def _add(self, user):
         url = self.request.get('url')
@@ -100,25 +64,6 @@ class RegistorContext(webapp2.RequestHandler):
                 logging.info('deplicated')
                 return False
             
-        return True
-    
-    def _get_key(self):
-        url_string = self.request.get('key')
-        if not url_string:
-            self.response.status = 400
-            return None
-        
-        return ndb.Key(urlsafe = url_string)
-    
-    def _delete(self, user):
-        key = self._get_key()
-        if not key:
-            return False
-        
-        result = key.delete()
-        if result is not None:
-            logging.debug(result)
-        
         return True
     
     def _edit(self, user):

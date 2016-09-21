@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block head %}
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "title": "{{ entity.title }}",
+  "description": "{{ entity.description }}",
+  "endpoint": "{{ endpoint }}",
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <h1>{{ entity.title }}</h1>
+  <p class="lead">{{ entity.description }}</p>
+  <div>
+  </div>
+  <hr>
+</div>
+{% endblock %}

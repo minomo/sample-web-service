@@ -36,3 +36,26 @@ class BaseModel(ndb.Model):
             raise ndb.tasklets.Return(fut)
     
         return internal_tasklet().get_result()
+
+    def get(self, name):
+        prop = self._properties.get(name)
+        if isinstance(prop, ndb.Property):
+            return prop._get_value(self)
+        else:
+            return None
+    
+    def set(self, name, value):
+        prop = self._properties.get(name)
+        if isinstance(prop, ndb.Property):
+            prop._set_value(self, value)
+            
+    def update_field(self, name, value):
+        if not value:
+            return False
+        
+        prop = self._properties.get(name)
+        if isinstance(prop, ndb.Property):
+            if value != prop._get_value(self):
+                return prop._set_value(self, value)
+
+        return False

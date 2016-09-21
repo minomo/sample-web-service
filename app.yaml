@@ -16,6 +16,9 @@ handlers:
 - url: /contexts/.*
   script: context_store.app
 
+- url: /devices/.*
+  script: location.app
+
 libraries:
 - name: webapp2
   version: latest
