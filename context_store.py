@@ -36,8 +36,8 @@ class StoreHandler(webapp2.RequestHandler):
         
         template_path = os.path.join(os.path.dirname(__file__), 'templates', request_file_name)
         self.response.out.write(template.render(template_path, template_dict))
-    
-        
+
+
 class RegistorContext(webapp2.RequestHandler):
 
     def get(self):
@@ -59,10 +59,10 @@ class RegistorContext(webapp2.RequestHandler):
                 {'url':self.request.uri + '?logout=1','text':'Logout'},
             ],
         }
-
+        
         template_path = os.path.join(os.path.dirname(__file__), 'templates', 'register.html')
         self.response.out.write(template.render(template_path, template_dict))
-        
+    
     def post(self):
         user = users.get_current_user()
         if not user:
@@ -80,7 +80,7 @@ class RegistorContext(webapp2.RequestHandler):
         
         if result:
             self.redirect(self.request.url)
-        
+    
     def _add(self, user):
         url = self.request.get('url')
         if not url:
@@ -101,7 +101,7 @@ class RegistorContext(webapp2.RequestHandler):
                 return False
             
         return True
-            
+    
     def _get_key(self):
         url_string = self.request.get('key')
         if not url_string:
@@ -109,7 +109,7 @@ class RegistorContext(webapp2.RequestHandler):
             return None
         
         return ndb.Key(urlsafe = url_string)
-        
+    
     def _delete(self, user):
         key = self._get_key()
         if not key:
@@ -118,16 +118,16 @@ class RegistorContext(webapp2.RequestHandler):
         result = key.delete()
         if result is not None:
             logging.debug(result)
-            
+        
         return True
-            
+    
     def _edit(self, user):
         key = self._get_key()
         if not key:
             return False
         
         entity = key.get()
-
+        
         url = self.request.get('url')
         if url and url != key.id():
             key.delete()
@@ -152,10 +152,9 @@ class RegistorContext(webapp2.RequestHandler):
         
         if do_update:
             entity.put()
-            
-        return True
         
-
+        return True
+    
     def _fetch_context(self, url):
         try:
             result = urlfetch.fetch(url)
@@ -164,7 +163,7 @@ class RegistorContext(webapp2.RequestHandler):
                     return result.content
             else:
                 logging.error('Bad response from %s. status is %u' % (url, result.status_code))
-
+        
         except urlfetch.Error as e:
             logging.exception(e)
 
