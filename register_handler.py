@@ -80,24 +80,16 @@ class RegisterHandler(webapp2.RequestHandler):
     def _edit(self, user):
         key = self._get_key()
         if key:
-            return self._update(key.get())
+            self._update(key.get())
+            return True
         else:
             return False
     
     def _update(self, entity):
-        do_update = False
-        
         for field in self.__class__.EDITABLE:
-            value = self.request.get(field)
-            do_update = self._update_field(entity, field, value)
+            entity.update_field(field, self._get_request_value(field))
         
-        if do_update:
-            entity.put()
-        
-        return True
+        entity.put_if_updated()
     
-    def _update_field(self, entity, field, value):
-        if value and value != entity.get(field):
-            return entity.set(field, value)
-        else:
-            return False
+    def _get_request_value(self, field):
+        return self.request.get(field)

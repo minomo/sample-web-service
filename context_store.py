@@ -79,25 +79,13 @@ class RegistorContext(register_handler.RegisterHandler):
             self._add(user)
             return True
         
-        do_update = False
-        title = self.request.get('title')
-        if title and title != entity.title:
-            entity.title = title
-            do_update = True
-        
-        description = self.request.get('description')
-        if description and entity.description != description:
-            entity.description = description
-            do_update = True
+        for field in ('title', 'description'):
+            entity.update_field(field, self.request.get(field))
         
         context = self._fetch_context(key.id())
-        if context and context != entity.context:
-            entity.context = context
-            do_update = True
-        
-        if do_update:
-            entity.put()
-        
+        entity.update_field('context', context)
+
+        entity.put_if_updated()
         return True
     
     def _fetch_context(self, url):

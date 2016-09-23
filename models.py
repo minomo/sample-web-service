@@ -5,6 +5,10 @@ class BaseModel(ndb.Model):
     added_on = ndb.DateTimeProperty(auto_now_add = True)
     updated_on = ndb.DateTimeProperty(auto_now = True)
     
+    def __init__(self):
+        super(BaseModel, self).__init__()
+        self._updated = False
+    
     @classmethod
     def insert(cls, key_name, **kwds):
 
@@ -36,7 +40,7 @@ class BaseModel(ndb.Model):
             raise ndb.tasklets.Return(fut)
     
         return internal_tasklet().get_result()
-
+    
     def get(self, name):
         prop = self._properties.get(name)
         if isinstance(prop, ndb.Property):
@@ -44,18 +48,19 @@ class BaseModel(ndb.Model):
         else:
             return None
     
-    def set(self, name, value):
-        prop = self._properties.get(name)
-        if isinstance(prop, ndb.Property):
-            prop._set_value(self, value)
-            
     def update_field(self, name, value):
-        if not value:
-            return False
+        if value is None:
+            return
         
         prop = self._properties.get(name)
         if isinstance(prop, ndb.Property):
+            if isinstance(prop, ndb.IntegerProperty):
+                value = int(value)
+            
             if value != prop._get_value(self):
-                return prop._set_value(self, value)
-
-        return False
+                prop._set_value(self, value)
+                self._updated = True
+    
+    def put_if_updated(self):
+        if self._updated:
+            self.put()

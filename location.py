@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import os
 import logging
-from google.appengine.api import users
 from google.appengine.ext import ndb
 from google.appengine.ext.webapp import template
 import webapp2
@@ -14,8 +13,8 @@ REGISTER_URL = BASE_URL + 'register'
 class Device(models.BaseModel):
     author = ndb.UserProperty()
     status = ndb.IntegerProperty()
-    title = ndb.TextProperty()
-    description = ndb.TextProperty()
+    title = ndb.StringProperty(indexed=False)
+    description = ndb.StringProperty(indexed=False)
 
 
 class DeviceHandler(webapp2.RequestHandler):
@@ -51,7 +50,7 @@ class DeviceHandler(webapp2.RequestHandler):
 
 class RegisterDevice(register_handler.RegisterHandler):
     TENPLATE = 'register_device.html'
-    EDITABLE = ('title', 'description')
+    EDITABLE = ('title', 'description', 'status')
     
     def _get_query(self, user):
         return Device.query(Device.author == user)
@@ -60,6 +59,7 @@ class RegisterDevice(register_handler.RegisterHandler):
         result = Device(
             title = self.request.get('title'),
             description = self.request.get('description'),
+            status = self._get_request_value('status'),
             author = user,
         ).put()
         
@@ -68,6 +68,13 @@ class RegisterDevice(register_handler.RegisterHandler):
             return False
         
         return True
+    
+    def _get_request_value(self, field):
+        value = self.request.get(field)
+        if field == 'status':
+            value = 1 if value else 0
+        
+        return value
 
 
 app = webapp2.WSGIApplication([

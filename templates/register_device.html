@@ -3,22 +3,11 @@
 {% block script %}
 <script>
 $(function() {
-	setForm = function(action, url, title, description, context, key) {
+	setForm = function(action, title, description, status, key) {
 		$('#action').val(action);
-		$('#url').val(url).prop('readonly', !!url);
 		$('#title').val(title);
 		$('#description').val(description);
-		if (context) {
-			if (typeof context !== 'string') {
-				context = JSON.stringify(context, null, 2);
-			}
-			
-			$('#context').val(context);
-			$('#form-group-context').show();
-		} else {
-			$('#context').val('');
-			$('#form-group-context').hide();
-		}
+		$('#status').prop('checked', status == 1);
 		$('#key').val(key);
 	};
 	
@@ -30,13 +19,13 @@ $(function() {
 	
 	$('.edit-row').on('click', function() {
 		$t = $(this);
-		setForm('edit', $t.data('url'), $t.data('title'), $t.data('description'), $t.data('context'), $t.data('key'))
+		setForm('edit', $t.data('title'), $t.data('description'), $t.data('status'), $t.data('key'))
 		$('#modal-form').modal('show');
 		return false;
 	});
 	
 	$('#btn-new').on('click', function() {
-		setForm('add', '', '', '', false, '');
+		setForm('add', '', '', '', '');
 		$('#modal-form').modal('show');
 		return false;
 	});
@@ -65,7 +54,7 @@ $(function() {
   </div>
 
    <div class="col-sm-2">
-    <input type="button" value="Edit" class="btn btn-default btn-xs edit-row" data-url="{{ row.key.id }}" data-title="{{ row.title }}" data-description="{{ row.description }}" data-context="{{ row.context }}" data-key="{{ row.key.urlsafe }}">
+    <input type="button" value="Edit" class="btn btn-default btn-xs edit-row" data-title="{{ row.title }}" data-description="{{ row.description }}" data-status="{{ row.status }}" data-key="{{ row.key.urlsafe }}">
     <form method="post">
      <input type="hidden" name="key" value="{{ row.key.urlsafe }}">
      <input type="hidden" name="action" value="delete">
@@ -91,10 +80,6 @@ $(function() {
       <input id="key" name="key" type="hidden" value="add">
       <div class="modal-body">
         <div class="form-group">
-          <label for="url">URL:</label>
-          <input id="url" name="url" type="text" class="form-control">
-        </div>
-        <div class="form-group">
           <label for="title">title:</label>
           <input id="title" name="title" type="text" class="form-control">
         </div>
@@ -102,9 +87,10 @@ $(function() {
           <label for="description">description:</label>
           <textarea id="description" name="description" class="form-control"></textarea>
         </div>
-        <div id="form-group-context" class="form-group">
-          <label for="context">@context:</label>
-          <textarea id="context" class="form-control" disabled="disabled"></textarea>
+        <div class="checkbox">
+          <label for="status">
+            <input type="checkbox" id="status" name="status" value="1"> In search
+          </label>
         </div>
       </div>
       <div class="modal-footer">

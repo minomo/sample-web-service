@@ -1,22 +1,63 @@
 {% extends "base.html" %}
 
 {% block head %}
+{% if entity.status == 1 %}
 <script type="application/ld+json">
 {
-  "@context": "http://schema.org",
+  "@context": "https://minomo.github.io/contexts/locationRequest",
   "title": "{{ entity.title }}",
   "description": "{{ entity.description }}",
   "endpoint": "{{ endpoint }}",
 }
 </script>
+{% endif %}
 {% endblock %}
 
 {% block content %}
 <div class="row">
+ <div class="col-sm-8">
   <h1>{{ entity.title }}</h1>
   <p class="lead">{{ entity.description }}</p>
-  <div>
+  <div>Update: {{ entity.updated_on|date:"SHORT_DATE_FORMAT" }}</div>
+ </div>
+{% if entity.status == 1 %}
+ <div class="col-sm-4">
+ <form id="location-form" action="{{ endpoint }}" method="post">
+  <input type="submit" value="send location" class="btn btn-primary">
+  <div class="form-group">
+   <label for="information-area">Location Info</label>
+   <textarea id="information-area" name="information" required="required" class="form-control"></textarea>
   </div>
-  <hr>
+ </form>
+ </div>
+{% endif %}
 </div>
+{% endblock %}
+
+{% block script %}
+{% if entity.status == 1 %}
+<script>
+$(function() {
+	if(navigator.geolocation) {
+		var $location_form = $('#location-form');
+	    function successOnReady(position) {
+			var c = position.coords;
+			var input =
+			  '<label>Lat:</label><input type="text" readonly="readonly" name="lat" value="' + c.latitude + '" class="form-control">'
+			+ '<label>Lon:</label><input type="text" readonly="readonly" name="lon" value="' + c.longitude + '" class="form-control">'
+			+ '<input type="hidden" name="alt" value="' + c.altitude + '">'
+			+ '<input type="hidden" name="acc" value="' + c.accuracy + '">'
+			+ '<input type="hidden" name="accAlt" value="' + c.altitudeAccuracy + '">'
+			$location_form.append(input);
+    		$('#information-area').removeProp('required');
+	    }
+
+	    function errorOnReady(error) {
+	    }
+		
+		navigator.geolocation.getCurrentPosition(successOnReady, errorOnReady, {enableHighAccuracy:true});
+	}
+});
+</script>
+{% endif %}
 {% endblock %}
