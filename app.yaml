@@ -16,8 +16,8 @@ handlers:
 - url: /contexts/.*
   script: context_store.app
 
-- url: /devices/.*
-  script: location.app
+- url: /finder/.*
+  script: location_finder.app
 
 libraries:
 - name: webapp2

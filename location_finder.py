@@ -10,7 +10,7 @@ import models
 import register_handler
 
 APP_ID = app_identity.get_application_id()
-BASE_URL = '/devices/'
+BASE_URL = '/finder/'
 REGISTER_URL = BASE_URL + 'register'
 
 class Device(models.BaseModel):
