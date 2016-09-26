@@ -1,12 +1,15 @@
 #!/usr/bin/env python
-import os
 import logging
+import os
+import webapp2
+from google.appengine.api import app_identity, mail
 from google.appengine.ext import ndb
 from google.appengine.ext.webapp import template
-import webapp2
+import helpers
 import models
 import register_handler
 
+APP_ID = app_identity.get_application_id()
 BASE_URL = '/devices/'
 REGISTER_URL = BASE_URL + 'register'
 
@@ -15,6 +18,7 @@ class Device(models.BaseModel):
     status = ndb.IntegerProperty()
     title = ndb.StringProperty(indexed=False)
     description = ndb.StringProperty(indexed=False)
+    url = ndb.StringProperty(indexed=False)
 
 
 class DeviceHandler(webapp2.RequestHandler):
@@ -46,6 +50,12 @@ class DeviceHandler(webapp2.RequestHandler):
         email = entity.author.email()
         lon = self.request.get('lon') or self.request.get('lng') or self.request.get('longitude')
         lat = self.request.get('lat') or self.request.get('latitude')
+        
+        mail.send_mail(
+            sender = 'noreply@%s.appspotmail.com' % APP_ID,
+            to = email,
+            subject = 'Location of your device',
+            body = 'Longitude:' + lon + 'Latitude:' + lat)
 
 
 class RegisterDevice(register_handler.RegisterHandler):
@@ -56,16 +66,22 @@ class RegisterDevice(register_handler.RegisterHandler):
         return Device.query(Device.author == user)
     
     def _add(self, user):
-        result = Device(
+        entity = Device(
             title = self.request.get('title'),
             description = self.request.get('description'),
             status = self._get_request_value('status'),
             author = user,
-        ).put()
+        )
         
-        if result is None:
+        key = entity.put()
+        if key is None:
             logging.info('Device add fail')
             return False
+        
+        shortUrl = helpers.ShortenUrl(self.request.host_url + BASE_URL + key.urlsafe())
+        if shortUrl:
+            entity.url = shortUrl
+            entity.put()
         
         return True
     

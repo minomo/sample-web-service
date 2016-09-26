@@ -1,3 +1,6 @@
 # Common Nonsense
 **/*.pyc
 **/.DS_Store
+
+# Do not commit these files
+*.SECRET.*
