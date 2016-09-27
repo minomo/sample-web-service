@@ -39,20 +39,21 @@ def ShortenUrl(longUrl):
     url = 'https://www.googleapis.com/urlshortener/v1/url?key=' + apikey
     try:
         result = urlfetch.fetch(url,
-            validate_certificate = True,
-            method = urlfetch.POST,
-            payload = json.dumps({'longUrl': longUrl}),
-            headers = {
-                'Content-Type': 'application/json',
-                'Referer'     : BASE_URL,
-            })
-        
+                                validate_certificate=True,
+                                method=urlfetch.POST,
+                                payload=json.dumps({'longUrl': longUrl}),
+                                headers={
+                                    'Content-Type': 'application/json',
+                                    'Referer': BASE_URL,
+                                })
+
         if result.status_code == 200:
             return json.loads(result.content).get('id')
         else:
-            logging.error('Bad response from %s. status is %u' % (url, result.status_code))
-    
+            logging.error('Bad response from %s. status is %u' %
+                          (url, result.status_code))
+
     except urlfetch.Error as e:
         logging.exception(e)
-    
+
     return None
